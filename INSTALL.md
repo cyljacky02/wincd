@@ -1,6 +1,6 @@
 # Installation and updates
 
-These instructions describe the planned v0.1.0 runtime package. It is a pre-release candidate; no runtime release has been published yet. Read the release's licensing and acceptance limitations before using it.
+These instructions describe the v0.1.0 runtime package, published as a pre-release under the [Apache License 2.0](LICENSE). Read the [release notes](CHANGELOG.md) for its acceptance limitations before using it.
 
 ## 1. Download and verify
 

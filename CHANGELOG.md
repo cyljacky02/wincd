@@ -1,6 +1,6 @@
 # Release notes
 
-## v0.1.0 — draft pre-release
+## v0.1.0 — pre-release
 
 Initial distribution candidate for the WinCD lightweight Deployment Engine and its Traditional Chinese TUI / PowerShell command-line Front-ends.
 
@@ -19,6 +19,15 @@ Initial distribution candidate for the WinCD lightweight Deployment Engine and i
 - No complete Windows Server validation matrix, production-workload validation, or real-F5 certification is claimed.
 - Local traffic intent is not proof of application health, successful connection draining, or actual F5 member state.
 - No automatic migration or compatibility with older development snapshots is promised.
-- WinCD distribution licensing and final release review are pending. No runtime release has been published.
+- No Authenticode signature or build provenance attestation is provided.
 
-The draft is not a production-readiness declaration. The final release notes will record the validation actually completed for the published package.
+### Validation of this package
+
+- Automated suite (fake host and TEMP directories): 1640 passed, 0 failed, on Windows PowerShell 5.1 with Pester 3.4.0.
+- Package contents verified file-for-file against the built source; read-only `status` smoke test from the extracted package succeeded.
+
+This is not a production-readiness declaration.
+
+### License
+
+Apache License 2.0. Bundled YamlDotNet remains under its MIT license.

@@ -8,7 +8,7 @@ This is the **public distribution repository**: user documentation, release note
 
 Download runtime ZIPs and their `SHA256SUMS` from [GitHub Releases](https://github.com/cyljacky02/wincd/releases). GitHub's automatically generated **Source code** ZIP/tarball contains this documentation repository, **not** the installable engine.
 
-The first planned release is **v0.1.0**, initially a **pre-release**. Its package is `wincd-engine-0.1.0.zip`. No runtime release has been published yet; licensing and final candidate review are pending. A pre-release is intended for evaluation, not a claim of production readiness.
+The current release is **v0.1.0**, a **pre-release**. Its package is `wincd-engine-0.1.0.zip`. A pre-release is intended for evaluation, not a claim of production readiness; see the [release notes](CHANGELOG.md) for its validation scope and limitations.
 
 ## Capabilities
 
@@ -31,6 +31,8 @@ See [installation and updates](INSTALL.md), [release notes](CHANGELOG.md), and [
 
 ## Licensing
 
-The WinCD runtime distribution license has not yet been selected. No open-source license is implied by this public repository. Bundled third-party components retain their own licenses; YamlDotNet's MIT notice is included in the runtime package.
+WinCD is licensed under the [Apache License, Version 2.0](LICENSE). Each release also attaches a copy as `LICENSE`.
+
+Bundled third-party components retain their own licenses: YamlDotNet is MIT-licensed, and its notice is included in the runtime package at `engine/WinCD/Lib/YamlDotNet/LICENSE.txt`.
 
 Do not upload real deployment configuration, credentials, logs, or production data to this public repository.
