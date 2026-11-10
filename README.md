@@ -11,7 +11,7 @@ Download runtime ZIPs and their `SHA256SUMS` from [GitHub Releases](https://gith
 The current release is **v0.1.1**, a **pre-release**, with two packages:
 
 - `wincd-engine-0.1.1.zip`: the engine.
-- `wincd-samples-0.1.1.zip` (optional): a demo you can deploy (v1, then v2) and roll back on a test machine without Tomcat, IIS, or F5, plus the fully commented Deployment Profile reference. See [samples pack](INSTALL.md#4-optional-try-the-samples-pack).
+- `wincd-samples-0.1.1.zip` (optional): a demo you can deploy (v1, then v2) and roll back on a test machine without Tomcat, IIS, or F5, plus the fully commented Deployment Profile reference. See section 4 of [INSTALL](INSTALL.md).
 
 A pre-release is intended for evaluation, not a claim of production readiness; see the [release notes](CHANGELOG.md) for its validation scope and limitations.
 
@@ -32,7 +32,7 @@ A pre-release is intended for evaluation, not a claim of production readiness; s
 
 The YAML parser is included, so an installed host does not need internet access or additional PowerShell modules. Current native/TUI acceptance and the Windows Server validation matrix are incomplete; this repository does not claim production-workload or real-F5 certification.
 
-See [installation and updates](INSTALL.md), [release notes](CHANGELOG.md), and [release integrity policy](RELEASE-POLICY.md).
+See [installation and updates](INSTALL.md) (Traditional Chinese), [release notes](CHANGELOG.md), and [release integrity policy](RELEASE-POLICY.md).
 
 ## Licensing
 
