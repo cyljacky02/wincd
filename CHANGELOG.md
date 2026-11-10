@@ -1,5 +1,39 @@
 # Release notes
 
+## v0.1.1 — pre-release
+
+Adds a samples pack so new users have a runnable starting point. The engine is unchanged from v0.1.0 apart from its reported version.
+
+### Added
+
+- `wincd-samples-0.1.1.zip`, a separate download built from the same source as the engine:
+  - `README.md`: a test-machine walkthrough (Traditional Chinese): deploy v1, deploy v2, roll back, clean up, with the equivalent command-line commands.
+  - `demo/wincd-demo-v1.zip`, `demo/wincd-demo-v2.zip`: deployment content for project `wincd-demo` that needs no Tomcat, IIS, or F5 and writes only to `C:\WinCD-demo\`. Demonstrates Mirror deletion with a preserve list, a single-file mapping, an ordered wait, a one-shot command, and version labels.
+  - `reference/order-api/`: the fully commented Deployment Profile reference, with alternatives for IIS sites, process services, checks, and F5 modes.
+
+### Changed
+
+- Engine version 0.1.1. Behavior, Deployment Profile rules, and data formats are identical to v0.1.0.
+
+### Known issues
+
+- In Windows PowerShell 5.1, starting `wincd.ps1` with `powershell.exe -File` fails before any command runs, because the default installation root cannot be determined. Use the call operator as documented; from cmd.exe, for example: `powershell.exe -NoProfile -Command "& 'C:\WinCD\engine\wincd.ps1' status; exit $LASTEXITCODE"`. v0.1.0 behaves the same.
+
+### Evaluation limitations
+
+Unchanged from v0.1.0: native Windows/TUI acceptance is incomplete; no Windows Server matrix, production-workload, or real-F5 certification is claimed; no Authenticode signature or build provenance attestation is provided. Use the demo on a test machine only.
+
+### Validation of these packages
+
+- Automated suite (fake host and TEMP directories): 1655 passed, 0 failed, on Windows PowerShell 5.1 with Pester 3.4.0. This includes deploying demo v1, deploying v2, and rolling back through the public commands in TEMP directories.
+- Both packages verified file-for-file against the built source. From the extracted engine, a read-only `status` succeeded and both demo ZIPs passed a read-only plan.
+
+This is not a production-readiness declaration.
+
+### License
+
+Apache License 2.0. Bundled YamlDotNet remains under its MIT license.
+
 ## v0.1.0 — pre-release
 
 Initial distribution candidate for the WinCD lightweight Deployment Engine and its Traditional Chinese TUI / PowerShell command-line Front-ends.
