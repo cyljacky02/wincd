@@ -5,7 +5,7 @@
 以下指令都在 Windows PowerShell 5.1（`powershell.exe`）執行。先把 `$version` 設成要安裝的版本：
 
 ```powershell
-$version = '0.1.1'
+$version = '0.1.2'
 ```
 
 ## 1. 下載與核對
@@ -84,6 +84,7 @@ D:\WinCD\data\
 | 範例包內的路徑 | 內容 |
 | --- | --- |
 | `README.md` | 測試機上手導覽：換版 v1 → 換版 v2 → 退版 → 清理，並列出對應的指令列指令。 |
+| `INSTALL.md` | 本文件（v0.1.2 起）。 |
 | `demo/wincd-demo-v1.zip`、`demo/wincd-demo-v2.zip` | 專案 `wincd-demo` 的 release：不需要 Tomcat、IIS 或 F5，只寫入 `C:\WinCD-demo\`。 |
 | `reference/order-api/` | 逐欄註解的完整部署設定參考，並列出 IIS 站台、程序服務、檢查步驟與 F5 模式的替代寫法。它指向 `D:\Tomcat9`、`C:\nginx` 與 IIS 監測站台，不能在乾淨的測試機上直接換版；撰寫自己的部署設定時從這裡複製。 |
 

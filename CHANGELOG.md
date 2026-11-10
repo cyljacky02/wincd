@@ -1,5 +1,37 @@
 # Release notes
 
+## v0.1.2 — pre-release
+
+Fixes starting `wincd.ps1` with `powershell.exe -File` and adds the Traditional Chinese installation guide to the samples pack.
+
+### Fixed
+
+- In Windows PowerShell 5.1, `powershell.exe -File` now starts `wincd.ps1`. In v0.1.1 and earlier it failed before any command ran, because the default installation root could not be determined. Starting it with the call operator behaves as before, and an installed engine still refuses another `-Root`.
+
+### Added
+
+- `INSTALL.md` in `wincd-samples-0.1.2.zip`: the Traditional Chinese installation and update guide, identical to this repository's INSTALL.md. It covers choosing the installation root, for example `D:\WinCD`; `engine`, `inbox`, and `data` always stay under that root.
+
+### Changed
+
+- Engine version 0.1.2. Apart from the `wincd.ps1` fix, behavior, Deployment Profile rules, and data formats are identical to v0.1.1.
+- The samples walkthrough links to the `INSTALL.md` inside the pack. The demos and the Deployment Profile reference are unchanged.
+
+### Evaluation limitations
+
+Unchanged from v0.1.1: native Windows/TUI acceptance is incomplete; no Windows Server matrix, production-workload, or real-F5 certification is claimed; no Authenticode signature or build provenance attestation is provided. Use the demo on a test machine only.
+
+### Validation of these packages
+
+- Automated suite (fake host and TEMP directories) on Windows PowerShell 5.1 with Pester 3.4.0: 1660 passed, 0 failed, 1 skipped. The skipped test compiles the monitor handler against IIS's Microsoft.Web.Administration and needs IIS on the test host.
+- Both packages verified file-for-file against the built source. From the extracted engine, `status` succeeded through both the call operator and `powershell.exe -File`, and both demo ZIPs passed a read-only plan. The INSTALL.md commands ran as written in an elevated session: install, `status`, update, `status`.
+
+This is not a production-readiness declaration.
+
+### License
+
+Apache License 2.0. Bundled YamlDotNet remains under its MIT license.
+
 ## v0.1.1 — pre-release
 
 Adds a samples pack so new users have a runnable starting point. The engine is unchanged from v0.1.0 apart from its reported version.

@@ -8,10 +8,10 @@ This is the **public distribution repository**: user documentation, release note
 
 Download runtime ZIPs and their `SHA256SUMS` from [GitHub Releases](https://github.com/cyljacky02/wincd/releases). GitHub's automatically generated **Source code** ZIP/tarball contains this documentation repository, **not** the installable engine.
 
-The current release is **v0.1.1**, a **pre-release**, with two packages:
+The current release is **v0.1.2**, a **pre-release**, with two packages:
 
-- `wincd-engine-0.1.1.zip`: the engine.
-- `wincd-samples-0.1.1.zip` (optional): a demo you can deploy (v1, then v2) and roll back on a test machine without Tomcat, IIS, or F5, plus the fully commented Deployment Profile reference. See section 4 of [INSTALL](INSTALL.md).
+- `wincd-engine-0.1.2.zip`: the engine.
+- `wincd-samples-0.1.2.zip` (optional): a demo you can deploy (v1, then v2) and roll back on a test machine without Tomcat, IIS, or F5, the fully commented Deployment Profile reference, and a copy of [INSTALL](INSTALL.md). See section 4 of INSTALL.
 
 A pre-release is intended for evaluation, not a claim of production readiness; see the [release notes](CHANGELOG.md) for its validation scope and limitations.
 
