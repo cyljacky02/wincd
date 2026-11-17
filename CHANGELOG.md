@@ -1,5 +1,59 @@
 # Release notes
 
+## v0.2.0 — pre-release
+
+Adds the Update write mode and Delete Mappings, runs Mappings in declared order, and fixes how failed or interrupted transactions are recorded and reported. **Transaction and Plan data formats change: read "Upgrading" before updating an existing installation.**
+
+### Upgrading from v0.1.x
+
+- Frozen Plans and transaction records now use `schemaRevision: 5`. v0.2.0 refuses to recover, preview a recovery, or switch traffic from records written by v0.1.x. v0.1.x engines likewise refuse v0.2.0 records. Nothing is converted automatically.
+- Before updating, finish every pending Recovery Run with the engine that is installed now, as INSTALL describes.
+- After updating, deploy each project once with v0.2.0.
+
+### Added
+
+- `Mode: Update` for directory mappings: adds or replaces the files the release folder contains and never deletes anything in the destination. Use it when only changed files are delivered. Rollback does not remove files that Update added in a newer version.
+- Delete Mappings (`Type: Delete`, `From` naming a TXT list in the release): remove the listed local files or folders. Paths that no longer exist are skipped. Deleted content is backed up and restored if the same deployment fails, but rollback does not bring it back. The engine refuses to delete its own installation or data folders, network paths, or content behind junctions or symlinks.
+- The summary shown before a deployment (TUI and `wincd deploy`) lists each path to delete, whether it currently exists, and the total size. It warns when rollback will be incomplete because of Update or Delete Mappings.
+- The samples pack's Deployment Profile reference shows Update and Delete Mappings.
+
+### Changed
+
+- Mappings run top to bottom in declared order. Each mapping works from what the mappings before it left. Backup and capacity checks still happen before any write, and restore undoes the mappings in reverse order.
+- After a restore, the decision whether traffic is switched back is made in one place. A recovery preview predicts exactly the warnings that the Recovery Run then records.
+- `wincd rollback <version>`: the engine itself selects the retained release. The rollback summary shows its SHA-256 and the risk notices.
+- Engine version 0.2.0.
+
+### Fixed
+
+- A deployment whose automatic restore succeeded is no longer left awaiting recovery when the intent of a phase or step could not be written to the transaction record (for example, while another process briefly held the file). Previously such a step stayed "running" and was treated as interrupted with an unknown outcome. The project blocked new deployments, kept traffic OFF, and needed a Recovery Run that repeated the whole restore. Such a step is now recorded as failed and not started. The transaction ends as restored, and traffic resumes when `F5.AutoUp` allows it. A step that was genuinely interrupted after it started (crash or Ctrl+C) is still treated as having an unknown outcome.
+- A one-shot command that failed before it started (for example, because its staged file had changed) is no longer reported as if it had run and needed its effects checked.
+- Writing the traffic gate creates a missing legacy health file folder.
+- A frozen `KeepReleases` that is not a positive number keeps every retained release instead of removing them.
+- Status, journal, and TUI labels:
+  - A restored transaction shows one consistent label.
+  - Entries left by a run that is no longer running show as unfinished.
+  - A Manual Traffic Switch preview shows as previewed, not rejected.
+  - Warnings say that traffic is switched back only once the project is no longer awaiting recovery.
+- `wincd deploy` shows the local host name in its summary. `wincd recover` prints recovery-preview warnings once.
+
+### Evaluation limitations
+
+Unchanged from v0.1.2: native Windows/TUI acceptance is incomplete; no Windows Server matrix, production-workload, or real-F5 certification is claimed; no Authenticode signature or build provenance attestation is provided. Use the demo on a test machine only.
+
+### Validation of these packages
+
+- Automated suite (fake host and TEMP directories) on Windows PowerShell 5.1 with Pester 3.4.0: 1907 passed, 0 failed, 0 skipped.
+- Both packages were verified file-for-file against the built source, including the files inside both demo ZIPs.
+- In an elevated session and a new dedicated root, the INSTALL.md commands ran as written. They installed `wincd-engine-0.1.2.zip` from v0.1.2 and ran `status`, then updated to `wincd-engine-0.2.0.zip` and ran `status`.
+- From the updated engine, `status` succeeded both through the call operator and through `powershell.exe -File`. Both demo ZIPs passed a read-only plan.
+
+This is not a production-readiness declaration.
+
+### License
+
+Apache License 2.0. Bundled YamlDotNet remains under its MIT license.
+
 ## v0.1.2 — pre-release
 
 Fixes starting `wincd.ps1` with `powershell.exe -File` and adds the Traditional Chinese installation guide to the samples pack.
