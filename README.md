@@ -8,10 +8,10 @@ This is the **public distribution repository**: user documentation, release note
 
 Download runtime ZIPs and their `SHA256SUMS` from [GitHub Releases](https://github.com/cyljacky02/wincd/releases). GitHub's automatically generated **Source code** ZIP/tarball contains this documentation repository, **not** the installable engine.
 
-The current release is **v0.2.0**, a **pre-release**, with two packages:
+The current release is **v0.3.0**, a **pre-release**, with two packages:
 
-- `wincd-engine-0.2.0.zip`: the engine. Its transaction data format differs from v0.1.x: read the [release notes](CHANGELOG.md) before updating.
-- `wincd-samples-0.2.0.zip` (optional): a demo you can deploy (v1, then v2) and roll back on a test machine without Tomcat, IIS, or F5, the fully commented Deployment Profile reference, and a copy of [INSTALL](INSTALL.md). See section 4 of INSTALL.
+- `wincd-engine-0.3.0.zip`: the engine. Its transaction data format and Backup layout differ from v0.2.x: read the [release notes](CHANGELOG.md) before updating.
+- `wincd-samples-0.3.0.zip` (optional): a demo you can deploy (v1, then v2) and roll back on a test machine without Tomcat, IIS, or F5, the fully commented Deployment Profile reference, and a copy of [INSTALL](INSTALL.md). See section 4 of INSTALL.
 
 A pre-release is intended for evaluation, not a claim of production readiness; see the [release notes](CHANGELOG.md) for its validation scope and limitations.
 
@@ -19,8 +19,8 @@ A pre-release is intended for evaluation, not a claim of production readiness; s
 
 - Deploy selected file and directory mappings for one project on one Windows host.
 - Manage Windows services, IIS sites/application pools, and declared process services in an explicit stop/start order.
-- Run declared one-shot commands, checks, and fixed waits at their specified positions.
-- Back up changed files, restore after failures, recover interrupted transactions, and roll back using retained deployment content.
+- Run declared one-shot commands, checks, and fixed waits at their specified positions, and stop at an Operator Pause until the Deployer decides to continue, fail, or interrupt.
+- Back up changed files at their original paths, restore after failures, recover interrupted transactions, and roll back using retained deployment content.
 - Express local traffic intent through an IIS-hosted F5 monitor endpoint or a legacy health file. This is not proof of application health, traffic draining, or the load balancer's actual member state.
 
 ## Requirements

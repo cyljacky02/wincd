@@ -1,5 +1,75 @@
 # Release notes
 
+## v0.3.0 — pre-release
+
+Adds the Operator Pause, keeps each Backup at the originals' own paths with a delete list and a guide for manual recovery, and fixes edge cases at go-live, in restore and in rollback selection. **Transaction and Plan data formats change again: read "Upgrading" before updating an existing installation.**
+
+### Upgrading from v0.2.x
+
+- Frozen Plans and transaction records now use `schemaRevision: 7`. v0.3.0 refuses to recover, preview a recovery, or switch traffic from records written by v0.2.x (revision 5, and revision 6, which only existed in development builds). v0.2.x engines likewise refuse revision 7 records and releases whose Orders contain `Pause`. Nothing is converted automatically.
+- v0.3.0 cannot read a Backup in the v0.2.x layout. Before updating, finish every pending Recovery Run and every unfinished transaction with the engine that is installed now, as INSTALL describes.
+- After updating, deploy each project once with v0.3.0.
+- Some deployments that v0.2.x accepted are now refused before the host is changed:
+  - a Backup path longer than 259 characters (247 for a folder). Install WinCD under a shorter root, such as `D:\WinCD`;
+  - a directory mapping that would overwrite or delete a read-only file. File mappings already refused this.
+
+### Added
+
+- Operator Pause: write `Pause` as an entry anywhere in `StopOrder` or `StartOrder` to stop the deployment there until the Deployer chooses one of three options:
+  - Continue: run the next entry.
+  - Fail: the deployment fails at the Pause and restores automatically.
+  - Interrupt: ends exactly like Ctrl+C. Traffic is set OFF and the project awaits a Recovery Run.
+
+  How it behaves:
+  - Only the exact word `Pause` counts; other casings are rejected with a hint.
+  - It is not an approval: the engine checks nobody's permission and records the decision, the time, and how long the deployment waited.
+  - The deploy and rollback summaries list every Pause. At a Pause, the screen shows the Order, the position, the steps before and after, and the time waited.
+  - A Pause only runs interactively (TUI, or `wincd` without `-Json`). A non-interactive or `-Json` deploy or rollback of a release with a Pause is refused before any host change. `-Yes` does not skip a Pause.
+  - Restore and Recovery Runs never stop at a Pause. A rollback stops at the Pauses of the release it deploys.
+- Backup layout: each original is kept at its own path below the transaction's Backup folder. For example, `C:\app\lib\a.jar` is kept at `<DataRoot>\backups\<project>\<transaction>\C\app\lib\a.jar`. Beside it are:
+  - `delete-list.txt`: the top-most paths the deployment created. It is a valid Delete List.
+  - `README.txt`: how to put the Backup back by hand, including read-only paths and the junctions or symlinks to recreate.
+
+  The engine never reads either file back: restore and Recovery Runs still follow the transaction record. Putting a Backup back by hand does not clear "awaiting recovery".
+- `Get-WinCDRelease` results include `warnings`.
+
+### Changed
+
+- If the release's retained copy cannot be read just after the deployment goes live (missing, damaged, or held open by antivirus or backup software), the deployment completes live with a `Release Store:` warning. Previously, a deployment that had finished this way ended awaiting recovery with traffic OFF, and the Recovery Run then undid the healthy deployment.
+- A damaged retained copy is left out of the release list and named in `warnings`, and every intact version can still be selected for rollback. Previously one damaged copy blocked rollback to every version.
+  - Selecting the damaged version is refused.
+  - When it shares a version label with another release, the label alone is still refused as repeated; choose by SHA-256.
+  - Retention cleanup deletes nothing while any retained copy is damaged.
+- Before Replace changes any destination, it refuses (and the deployment restores) when a file appeared after the Backup was taken where a Mirror would delete it or a write would overwrite it, because the Backup does not hold that file. This check does not cover:
+  - a folder that appears empty;
+  - files that appear after Replace starts (a failed Mirror deployment still removes them when it restores);
+  - Delete Mappings, which delete whatever is at their listed paths.
+- Engine version 0.3.0.
+
+### Fixed
+
+- Restore no longer resolves 8.3 short names in recorded delete paths a second time. Previously, if a short name came to point at a different folder between Backup and restore, a restore could leave behind a folder the deployment created, or put deleted content into the wrong folder while reporting "restored". It now restores the correct paths, or leaves the project awaiting recovery.
+- A transaction record whose recorded paths would lead outside their mapping (for example `..` or a network path) leaves the project awaiting recovery instead of restoring anywhere.
+- An Interrupt at an Operator Pause stays an interruption even when its outcome cannot be written to the transaction record.
+- `powershell.exe -NonInteractive` counts as non-interactive before a release with a Pause is admitted.
+
+### Evaluation limitations
+
+Unchanged from v0.2.0: native Windows/TUI acceptance is incomplete; no Windows Server matrix, production-workload, or real-F5 certification is claimed; no Authenticode signature or build provenance attestation is provided. Use the demo on a test machine only.
+
+### Validation of these packages
+
+- Automated suite (fake host and TEMP directories) on Windows PowerShell 5.1 with Pester 3.4.0: 1965 passed, 0 failed, 0 skipped. Nine tests that need a volume that generates 8.3 short names were inconclusive on the validation machine.
+- Both packages were verified file-for-file against the built source, including the files inside both demo ZIPs.
+- In an elevated session and a new dedicated root, the INSTALL.md commands ran as written. They installed `wincd-engine-0.2.0.zip` from v0.2.0 and ran `status`, then updated to `wincd-engine-0.3.0.zip` and ran `status`.
+- From the updated engine, `status` succeeded both through the call operator and through `powershell.exe -File`. Both demo ZIPs passed a read-only plan.
+
+This is not a production-readiness declaration.
+
+### License
+
+Apache License 2.0. Bundled YamlDotNet remains under its MIT license.
+
 ## v0.2.0 — pre-release
 
 Adds the Update write mode and Delete Mappings, runs Mappings in declared order, and fixes how failed or interrupted transactions are recorded and reported. **Transaction and Plan data formats change: read "Upgrading" before updating an existing installation.**
