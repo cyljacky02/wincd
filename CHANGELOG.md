@@ -1,5 +1,50 @@
 # Release notes
 
+## v0.3.1 — pre-release
+
+Fixes how rollback, deployment and retention cleanup decide which release is installed, makes restore check every recorded change before undoing any, and has `wincd` explain why an operation cannot run before asking for confirmation. Data formats are unchanged from v0.3.0.
+
+### Upgrading
+
+- From v0.3.0: transaction records, frozen Plans and the Backup layout are unchanged (`schemaRevision: 7`). Replace the engine folder as INSTALL describes; projects do not need to be deployed again. As for every update, first close running TUIs and jobs and finish pending Recovery Runs.
+- From v0.2.x: follow "Upgrading from v0.2.x" under v0.3.0 below. It applies unchanged.
+
+### Fixed
+
+- Rollback, deployment and retention cleanup now use the release that is actually installed, as `status` reports it, instead of the release whose deployment finished last. Previously, after the host clock was set back, these could go wrong:
+  - the default rollback could reinstall the release that was already running;
+  - after a restore, an Overlay deployment could remove files based on the wrong release;
+  - retention cleanup could delete the installed release's only retained copy.
+
+  When the records do not show which release is installed, deploy and rollback are refused (field `Journal`) instead of guessing which files to remove, and retention cleanup deletes nothing. The read-only release list still shows `current` as before in that case.
+- Restore and Recovery Runs check every mapping's recorded change before undoing any destination. Previously, a mismatch found in a later mapping stopped the restore after the earlier mappings had already been put back.
+- An Exec Step is reported as running only after its start has been recorded. An Exec whose start could not be recorded is reported only as not started.
+
+### Changed
+
+- `wincd` asks for `Y` only when the operation can run as summarized. It now refuses before asking (`rejected`, exit code 1, host unchanged) when:
+  - `f5 down|up` without `-Yes` or `-Force` gets a rejected preview, or a preview with Forceable warnings. The result keeps those `warnings` and names the explicit `-Force` command; `Y` never means Force. These refusals are not recorded as manual traffic switches.
+  - `deploy` or `rollback` runs with `-Json` but without `-Yes`, and the release contains an Operator Pause (field `OperatorPause`). Use the TUI or `wincd` without `-Json`.
+  - the default `rollback` finds no version to roll back to because the previous version's retained copy is damaged. The damaged copies are listed in `warnings`.
+- Engine version 0.3.1. Deployment Profile rules and data formats are identical to v0.3.0.
+
+### Evaluation limitations
+
+Unchanged from v0.3.0: native Windows/TUI acceptance is incomplete; no Windows Server matrix, production-workload, or real-F5 certification is claimed; no Authenticode signature or build provenance attestation is provided. Use the demo on a test machine only.
+
+### Validation of these packages
+
+- TODO(before publishing): automated suite result (elevated Windows PowerShell 5.1, Pester 3.4.0): passed / failed / skipped / inconclusive.
+- Both packages were verified file-for-file against the built source, including the files inside both demo ZIPs.
+- From the extracted engine, `status` succeeded both through the call operator and through `powershell.exe -File`. Both demo ZIPs passed a read-only plan.
+- TODO(before publishing): in an elevated session and a new dedicated root, the INSTALL.md commands ran as written: install `wincd-engine-0.3.0.zip`, `status`, update to `wincd-engine-0.3.1.zip`, `status`.
+
+This is not a production-readiness declaration.
+
+### License
+
+Apache License 2.0. Bundled YamlDotNet remains under its MIT license.
+
 ## v0.3.0 — pre-release
 
 Adds the Operator Pause, keeps each Backup at the originals' own paths with a delete list and a guide for manual recovery, and fixes edge cases at go-live, in restore and in rollback selection. **Transaction and Plan data formats change again: read "Upgrading" before updating an existing installation.**
