@@ -5,7 +5,7 @@
 以下指令都在 Windows PowerShell 5.1（`powershell.exe`）執行。先把 `$version` 設成要安裝的版本：
 
 ```powershell
-$version = '0.3.1'
+$version = '0.3.2'
 ```
 
 ## 1. 下載與核對

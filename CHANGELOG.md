@@ -1,5 +1,44 @@
 # Release notes
 
+## v0.3.2 — pre-release
+
+The disk space check before a deployment or rollback now counts only what that run needs. `KeepReleases` and `KeepBackups` no longer reserve disk space. Data formats are unchanged from v0.3.0, apart from one field dropped from the capacity report.
+
+### Upgrading
+
+- From v0.3.0 or v0.3.1: transaction records, frozen Plans and the Backup layout are unchanged (`schemaRevision: 7`). Replace the engine folder as INSTALL describes; projects do not need to be deployed again. As for every update, first close running TUIs and jobs and finish pending Recovery Runs.
+- From v0.2.x: follow "Upgrading from v0.2.x" under v0.3.0 below. It applies unchanged.
+
+### Changed
+
+- The disk space check before the host is changed, and its repeat after StopOrder Exec steps and before Backup, counts only this run's peak need:
+  - on the data volume: a new retained release copy (none when that release is already retained), extraction, this run's Backup, transaction records and a safety margin;
+  - on each destination volume: what this run writes.
+
+  Previously the check also required room for `KeepReleases − 1` more releases and `KeepBackups − 1` more backups. A large count such as 9999 therefore refused deployments with `DiskSpace` even when the disk could hold the deployment. Too little space for this run is still refused (`rejected`, field `DiskSpace`) before the host is changed. The check never deletes retained releases or backups to make room.
+- A very large `KeepReleases` or `KeepBackups` now means, in effect, no automatic cleanup. That has two costs:
+  - listing and selecting releases hash every retained copy again, so the release list and rollback get slower as copies accumulate;
+  - every Backup holds the files a deployment overwrote or deleted as they were, plaintext configuration included. They accumulate under the data folder until you delete them.
+- The `capacity` and `backupCapacity` reports in results and transaction records no longer have a `retentionBytes` field.
+- Engine version 0.3.2. Deployment Profile rules, frozen Plans and the Backup layout are identical to v0.3.0; transaction records differ only by the dropped `retentionBytes` field, which no engine reads back.
+
+### Evaluation limitations
+
+Unchanged from v0.3.0: native Windows/TUI acceptance is incomplete; no Windows Server matrix, production-workload, or real-F5 certification is claimed; no Authenticode signature or build provenance attestation is provided. Use the demo on a test machine only.
+
+### Validation of these packages
+
+- Automated suite (fake host and TEMP directories) on Windows PowerShell 5.1 with Pester 3.4.0, in an elevated session: 1998 passed, 0 failed, 1 skipped. The skipped test compiles the monitor handler against IIS's Microsoft.Web.Administration and needs IIS on the test host. Nine tests that need a volume that generates 8.3 short names were inconclusive on the validation machine.
+- Both packages were verified file-for-file against the built source, including the files inside both demo ZIPs.
+- In an elevated session and a new dedicated root, the INSTALL.md commands ran as written. They installed `wincd-engine-0.3.1.zip` from v0.3.1 and ran `status`, then updated to `wincd-engine-0.3.2.zip` and ran `status`. Each ZIP matched its release's `SHA256SUMS`.
+- From the updated engine, `status` succeeded both through the call operator and through `powershell.exe -File`. Both demo ZIPs passed a read-only plan.
+
+This is not a production-readiness declaration.
+
+### License
+
+Apache License 2.0. Bundled YamlDotNet remains under its MIT license.
+
 ## v0.3.1 — pre-release
 
 Fixes how rollback, deployment and retention cleanup decide which release is installed, makes restore check every recorded change before undoing any, and has `wincd` explain why an operation cannot run before asking for confirmation. Data formats are unchanged from v0.3.0.
