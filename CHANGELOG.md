@@ -34,10 +34,10 @@ Unchanged from v0.3.0: native Windows/TUI acceptance is incomplete; no Windows S
 
 ### Validation of these packages
 
-- TODO(before publishing): automated suite result (elevated Windows PowerShell 5.1, Pester 3.4.0): passed / failed / skipped / inconclusive.
+- Automated suite (fake host and TEMP directories) on Windows PowerShell 5.1 with Pester 3.4.0, in an elevated session: 1995 passed, 0 failed, 1 skipped. The skipped test compiles the monitor handler against IIS's Microsoft.Web.Administration and needs IIS on the test host. Nine tests that need a volume that generates 8.3 short names were inconclusive on the validation machine.
 - Both packages were verified file-for-file against the built source, including the files inside both demo ZIPs.
-- From the extracted engine, `status` succeeded both through the call operator and through `powershell.exe -File`. Both demo ZIPs passed a read-only plan.
-- TODO(before publishing): in an elevated session and a new dedicated root, the INSTALL.md commands ran as written: install `wincd-engine-0.3.0.zip`, `status`, update to `wincd-engine-0.3.1.zip`, `status`.
+- In an elevated session and a new dedicated root, the INSTALL.md commands ran as written. They installed `wincd-engine-0.3.0.zip` from v0.3.0 and ran `status`, then updated to `wincd-engine-0.3.1.zip` and ran `status`. Each ZIP matched its release's `SHA256SUMS`.
+- From the updated engine, `status` succeeded both through the call operator and through `powershell.exe -File`. Both demo ZIPs passed a read-only plan.
 
 This is not a production-readiness declaration.
 
