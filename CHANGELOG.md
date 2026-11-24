@@ -1,5 +1,64 @@
 # Release notes
 
+## v0.4.0 — pre-release
+
+This release adds two ways to operate WinCD without typing commands: `install.bat` to install or update the engine, and a BAT kit that gives deployers double-click Status, Deploy, Go-Live, Rollback and Recovery Run for one deployment environment. Deployment behavior and data formats are unchanged from v0.3.2.
+
+### Upgrading
+
+- From v0.3.0, v0.3.1 or v0.3.2: transaction records, frozen Plans and the Backup layout are unchanged (`schemaRevision: 7`). Update with `install.bat`, or replace the engine folder as INSTALL describes. Projects do not need to be deployed again. As for every update, first close running TUIs and jobs and finish pending Recovery Runs.
+- If you install or update by hand, run the new `icacls ... /setowner` line in INSTALL after unpacking. Files unpacked in an elevated session can be owned by your account rather than Administrators, and the BAT kit refuses to run an engine whose files a non-elevated session of that account could change. `install.bat` already does this.
+- From v0.2.x: follow "Upgrading from v0.2.x" under v0.3.0 below. It applies unchanged.
+
+### Added
+
+- **`install.bat` and `install-fast.bat`** are now attached to the release. Put either one next to `wincd-engine-<version>.zip` and `SHA256SUMS`, then double-click it. See INSTALL section 2.
+  - Checks the engine ZIP against `SHA256SUMS`.
+  - Finds existing installations in the top-level folders of each local fixed drive and offers to update them. It never downgrades.
+  - Refuses to update while a project awaits recovery or a transaction is in progress. It also refuses an installation that a non-administrator could have changed.
+  - Shows a summary and asks for uppercase `Y`.
+  - For automation: `-Root`, `-Version` and `-Yes`. Exit codes: 0 done, 1 refused (nothing changed), 2 failed.
+  - `install-fast.bat` is the same installer preset to `D:\WinCD` and the newest package in the folder. It refuses on a host without a local `D:` drive.
+- **BAT kit for manual deployment.** The kit builder now ships in the engine as `engine\ManualKit\New-WinCDManualKit.ps1`. See INSTALL section 5.
+  - The builder makes a folder of BATs for one project on one host: `1-Status.bat`, `2-Deploy.bat`, `3-Go-Live-Up-F5.bat` (F5 environments only), a final Status, and the exceptional `Exception-Rollback.bat` and `Exception-Recovery-Run.bat`.
+  - Each BAT calls the installed `wincd` without `-Yes`, `-Json` or `-Force`. WinCD shows its own summary, asks for uppercase `Y` and returns its own exit code. A nonzero exit code is shown as a stop, with its meaning.
+  - Deploy asks the deployer to paste the release SHA-256 from the approved handoff record. It then keeps `release.zip` open, so nothing can replace it, until WinCD finishes.
+  - A kit refuses, before asking for UAC, to run from a folder that non-administrators could change. Deliver it into a folder protected first, then compare every file's SHA-256 with the builder's output; the kit's `README.txt` gives the commands.
+  - Delivered kits keep working across engine updates. Rebuild a kit only when its environment's values change, or when release notes say the kit's launcher changed.
+- **Samples:** `demo/wincd-kit-wincd-demo/`, a kit for the `wincd-demo` project and an engine at `C:\WinCD`, to try on a test machine with the two demo releases. See the samples `README.md`.
+
+### Changed
+
+- INSTALL's manual steps now stop when `New-Item`, `Remove-Item` or `icacls` fails, and set the engine's owner to Administrators.
+- Engine version 0.4.0. `wincd` commands, the TUI, Deployment Profile rules, frozen Plans, transaction records and the Backup layout are identical to v0.3.2. The engine folder additionally contains `ManualKit\`, which the engine never loads.
+
+### Evaluation limitations
+
+Unchanged from v0.3.0: native Windows/TUI acceptance is incomplete; no Windows Server matrix, production-workload, or real-F5 certification is claimed; no Authenticode signature or build provenance attestation is provided. Use the demo on a test machine only.
+
+New in this release:
+
+- The BAT kit has not been accepted in a real interactive console. Not yet observed: a real UAC prompt including cancel and deny, double-clicking from Explorer, typing `Y` and Operator Pause answers, the window staying open, and Ctrl+C. Automated tests simulate UAC and answer prompts through pipes.
+- `install.bat` has not been verified by double-clicking from Explorer, through its UAC relaunch, or with a non-CJK console font.
+
+### Validation of these packages
+
+- Automated suite (fake host and TEMP directories) on Windows PowerShell 5.1 with Pester 3.4.0, in an elevated session: 2155 passed, 0 failed, 1 skipped. The skipped test compiles the monitor handler against IIS's Microsoft.Web.Administration and needs IIS on the test host. Nine tests that need a volume that generates 8.3 short names were inconclusive on the validation machine.
+- Both packages were verified file-for-file against the built source. That includes the files inside both demo ZIPs and the demo kit, which matched a rebuild with the same parameters.
+- In an elevated session, with a new dedicated root for each scenario:
+  - `install.bat -Version 0.3.2 -Root <root> -Yes` installed v0.3.2. `install.bat -Yes` then updated it to v0.4.0. Afterwards every engine file was owned by Administrators.
+    - In the first of five attempts the update refused (exit 1) and left v0.3.2 intact; the cause was not captured. The next four attempts succeeded.
+  - `install-fast.bat -Yes` refused on the validation host, which has no `D:` drive, and changed nothing.
+  - The INSTALL.md manual commands ran as written: install v0.3.2, then update to v0.4.0. `status` succeeded through the call operator and through `powershell.exe -File`.
+  - The installed engine's `ManualKit\` builder built a kit for `wincd-demo`. It was delivered as the kit's `README.txt` describes, and every file's SHA-256 matched the builder's output. Its `1-Status.bat` ran the installed `wincd status` and exited 0.
+  - Both demo ZIPs passed a read-only plan with the installed engine.
+
+This is not a production-readiness declaration.
+
+### License
+
+Apache License 2.0. Bundled YamlDotNet remains under its MIT license.
+
 ## v0.3.2 — pre-release
 
 The disk space check before a deployment or rollback now counts only what that run needs. `KeepReleases` and `KeepBackups` no longer reserve disk space. Data formats are unchanged from v0.3.0, apart from one field dropped from the capacity report.
