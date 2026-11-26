@@ -1,5 +1,62 @@
 # Release notes
 
+## v0.4.1 — pre-release
+
+This release changes how BAT kits are built and delivered. A kit now carries its Release and pins the Release's SHA-256 when it is built, so `2-Deploy.bat` no longer asks the deployer to paste one. A new packager turns one Release into a single handoff ZIP that a deployer unzips and works through by double-clicking. Deployment behavior and data formats are unchanged from v0.4.0.
+
+### Upgrading
+
+- From v0.3.0–v0.4.0: transaction records, frozen Plans and the Backup layout are unchanged (`schemaRevision: 7`). Update with `install.bat`, or replace the engine folder as INSTALL describes. Projects do not need to be deployed again. As for every update, first close running TUIs and jobs and finish pending Recovery Runs.
+- Kits built with v0.4.0 keep working after the update, because each kit carries its own launcher. They still ask for a pasted SHA-256. To move a deployment environment to the pinned flow, build a new kit with the v0.4.1 builder or the packager, and replace the old kit folder as a whole.
+- From v0.2.x: follow "Upgrading from v0.2.x" under v0.3.0 below. It applies unchanged.
+
+### Added
+
+- **Packager** for platform maintainers: `WinCD-Packager-0.4.1.zip`. Unzip it, put a Release next to `Pack.bat` named `release.zip`, and double-click `Pack.bat`. It needs no administrator rights, installs nothing and works offline. Its `README.txt` describes it; see also INSTALL section 5.
+  - It checks its bundled installer files against `SHA256SUMS` and checks the Release with WinCD's own read-only plan. A rejected Release produces no output.
+  - It writes one handoff ZIP, `WinCD-<Project>-<yyyyMMdd-HHmm>.zip`, and prints that ZIP's SHA-256 and the Release's project, version label and ZIP SHA-256 for your own records.
+  - The handoff ZIP holds a one-page Traditional Chinese guide, `1-Install\` (this release's `install-fast.bat`, engine ZIP and `SHA256SUMS`, unchanged), `2-Prepare-Kit.bat`, and the built kit with its Release.
+  - The guide is written for that Release. It covers the F5 mode, `F5.AutoUp: true` (traffic opens when Deploy succeeds, so there is no Go-Live step), Operator Pauses (uppercase `C`, `F` or `I`), the IIS monitor that an `IisEndpoint` host must already have, and Releases without a version label. `Pack.bat` also warns you about `AutoUp: true` and Operator Pauses.
+  - `2-Prepare-Kit.bat` asks for UAC and places the kit with its Release in `D:\WinCD-Kits\<Project>`. The folder is owned by Administrators and only administrators can change it. Download marks are removed, and every file is checked against the SHA-256 recorded when the handoff was packed. An older kit for the same project is replaced as a whole. While a kit operation still holds the old kit, `2-Prepare-Kit.bat` refuses and leaves it as it was.
+  - The handoff assumes a local fixed `D:` drive, WinCD at `D:\WinCD` and kits under `D:\WinCD-Kits`. On a host with v0.4.0 at `D:\WinCD`, the handoff's `install-fast.bat` offers the update to v0.4.1.
+  - The packager ZIP contains `SHA256SUMS`, so its own SHA-256 is published in `WinCD-Packager-0.4.1.zip.sha256`, not in `SHA256SUMS`. Building it again from the same files gives the same ZIP.
+
+### Changed
+
+- **BAT kit builder** (`engine\ManualKit\New-WinCDManualKit.ps1`, see INSTALL section 5):
+  - `-ReleasePath` is required. The builder copies the Release into the kit as `release.zip` and pins its SHA-256 in `wincd-kit.psd1`. A kit without a pinned Release is never built.
+  - `2-Deploy.bat` asks for no value. It opens `release.zip` read-only, compares its SHA-256 with the pinned one, and refuses before calling WinCD when they differ. As before, it keeps the file open until WinCD finishes. This detects a wrong or damaged file; approval and origin remain your change process's job.
+  - The builder checks the Release with WinCD's own read-only plan. It refuses when the plan rejects the Release, or when the Release's `Project` or `F5.Mode` differs from `-Project` or `-F5Mode`. Before, a kit could hold another project's Release: Deploy then changed that project while the kit's other operations acted on the kit's project.
+  - Kits built for different Releases of one environment differ only in `release.zip` and the pinned SHA-256. The BATs, the launcher and `README.txt` are byte-identical.
+- **Samples:** the demo now has one kit per demo Release, `demo/wincd-kit-wincd-demo-v1/` and `demo/wincd-kit-wincd-demo-v2/`, each with its `release.zip` inside.
+- Engine version 0.4.1. `wincd` commands, the TUI, Deployment Profile rules, frozen Plans, transaction records and the Backup layout are identical to v0.4.0. `install.bat` and `install-fast.bat` are byte-identical to v0.4.0's.
+
+### Evaluation limitations
+
+Unchanged from v0.4.0: native Windows/TUI acceptance is incomplete; no Windows Server matrix, production-workload, or real-F5 certification is claimed; no Authenticode signature or build provenance attestation is provided. The v0.4.0 limitations of the BAT kit and of `install.bat` still apply. Use the demo on a test machine only.
+
+New in this release:
+
+- `2-Prepare-Kit.bat` has not been run in a real interactive session. Not yet observed: a real UAC prompt including cancel and deny, double-clicking from Explorer, and a handoff ZIP extracted into a folder synced by OneDrive. Automated tests run its elevated path in an elevated session and simulate the UAC relaunch.
+- The handoff has not been run end to end on a host with a real `D:` drive. Automated tests run the same code with other roots.
+
+### Validation of these packages
+
+- Automated suite (fake host and TEMP directories) on Windows PowerShell 5.1 with Pester 3.4.0, in an elevated session: 2205 passed, 0 failed, 0 skipped. Nine tests that need a volume that generates 8.3 short names were inconclusive on the validation machine.
+- Every file in `SHA256SUMS` and the packager's `.sha256` matched. The engine package was verified file-for-file against the built source, and its manifest declares 0.4.1.
+- With the engine package unpacked, not installed:
+  - Both demo ZIPs passed a read-only plan.
+  - Each demo kit pins the SHA-256 of its `release.zip`, which is the matching demo ZIP.
+  - The engine's `ManualKit\` builder built a kit for `wincd-demo`, and refused to build one for `-Project order-api` from the same Release.
+- The packager ZIP's installer files are byte-identical to this release's, and its builder and launcher to the engine's. `Pack.bat` packed `wincd-demo-v1.zip` (exit 0) into a handoff ZIP whose `1-Install\` files are byte-identical to this release's. A second build of the packager ZIP from the same files had the same SHA-256.
+- Not repeated for this release: installing and updating on a validation host. The installers are byte-identical to v0.4.0's, whose validation is recorded below.
+
+This is not a production-readiness declaration.
+
+### License
+
+Apache License 2.0. Bundled YamlDotNet remains under its MIT license.
+
 ## v0.4.0 — pre-release
 
 This release adds two ways to operate WinCD without typing commands: `install.bat` to install or update the engine, and a BAT kit that gives deployers double-click Status, Deploy, Go-Live, Rollback and Recovery Run for one deployment environment. Deployment behavior and data formats are unchanged from v0.3.2.
