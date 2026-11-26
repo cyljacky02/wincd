@@ -1,5 +1,55 @@
 # Release notes
 
+## v0.4.2 — pre-release
+
+This release fixes installs and kit preparation that failed when an antivirus scan or the Windows search indexer briefly held a file that had just been unzipped or copied. The engine is unchanged from v0.4.1.
+
+### Upgrading
+
+- From v0.3.0–v0.4.1: transaction records, frozen Plans and the Backup layout are unchanged (`schemaRevision: 7`). Update with `install.bat`, or replace the engine folder as INSTALL describes. Projects do not need to be deployed again. As for every update, first close running TUIs and jobs and finish pending Recovery Runs.
+- Kits that are already prepared are not affected. To get the fixed `2-Prepare-Kit.bat`, pack the next handoff with `WinCD-Packager-0.4.2.zip`.
+- From v0.2.x: follow "Upgrading from v0.2.x" under v0.3.0 below. It applies unchanged.
+
+### Fixed
+
+- `install.bat` and `install-fast.bat` could fail with `無法放置 engine 資料夾 … 拒絕存取路徑 '…\engine.new-…\engine'`, and on a fresh install ask you to delete the new root folder by hand. A second run usually succeeded.
+  - Cause: Windows refuses to rename or remove a folder while any file below it is open. Antivirus software and the search indexer often open freshly unzipped files for a moment.
+  - The installer now says it is waiting (`等待其他程式（例如防毒掃描）放開 … 裡的檔案`) and retries for up to about 30 seconds. If the file is still held after that, it fails as before.
+  - When updating, it waits before it moves the old engine aside, so the host keeps its engine while it waits. Moving an existing engine aside still refuses at once when one of its files is open.
+  - If you saw this error with v0.4.1: delete the root folder the message names (only a fresh install asks for this), then run the installer again.
+- `2-Prepare-Kit.bat` waits the same way before it places the prepared kit in `D:\WinCD-Kits\<Project>`, and before it removes its temporary folder. Moving an old kit aside still refuses at once while a kit operation holds it.
+
+### Changed
+
+- Because of this fix, `install.bat` and `install-fast.bat` differ from those of v0.4.0 and v0.4.1.
+- Engine version 0.4.2. `wincd` commands, the TUI, Deployment Profile rules, frozen Plans, transaction records and the Backup layout are identical to v0.4.1.
+
+### Evaluation limitations
+
+Unchanged from v0.4.1: native Windows/TUI acceptance is incomplete; no Windows Server matrix, production-workload, or real-F5 certification is claimed; no Authenticode signature or build provenance attestation is provided. The v0.4.1 limitations of `2-Prepare-Kit.bat` and the handoff, and the v0.4.0 limitations of the BAT kit and `install.bat`, still apply. Use the demo on a test machine only.
+
+New in this release:
+
+- The wait was tested with another process holding a freshly unzipped or copied file open, not with a real antivirus product.
+
+### Validation of these packages
+
+- Automated suite (fake host and TEMP directories) on Windows PowerShell 5.1 with Pester 3.4.0, in an elevated session: 2210 passed, 0 failed, 0 skipped. Nine tests that need a volume that generates 8.3 short names were inconclusive on the validation machine.
+- Every file in `SHA256SUMS` and the packager's `.sha256` matched. The engine package was verified file-for-file against the built source, and its manifest declares 0.4.2.
+- With the engine package unpacked, not installed:
+  - Both demo ZIPs passed a read-only plan.
+  - Each demo kit pins the SHA-256 of its `release.zip`, which is the matching demo ZIP.
+  - The engine's `ManualKit\` builder built a kit for `wincd-demo`, and refused to build one for `-Project order-api` from the same Release.
+- The packager ZIP's installer files are byte-identical to this release's, and its builder and launcher to the engine's. `Pack.bat` packed `wincd-demo-v1.zip` (exit 0) into a handoff ZIP whose `1-Install\` files are byte-identical to this release's. A second build of the packager ZIP from the same files had the same SHA-256.
+- The installer script inside the built `install.bat` did a fresh install into a test folder while another process held a just-unzipped engine file open, without delete sharing, for 5 seconds. It reported the wait and completed (exit 0) with engine 0.4.2.
+- Not done for this release: installing or updating by double-clicking `install.bat` on a validation host.
+
+This is not a production-readiness declaration.
+
+### License
+
+Apache License 2.0. Bundled YamlDotNet remains under its MIT license.
+
 ## v0.4.1 — pre-release
 
 This release changes how BAT kits are built and delivered. A kit now carries its Release and pins the Release's SHA-256 when it is built, so `2-Deploy.bat` no longer asks the deployer to paste one. A new packager turns one Release into a single handoff ZIP that a deployer unzips and works through by double-clicking. Deployment behavior and data formats are unchanged from v0.4.0.

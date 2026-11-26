@@ -8,12 +8,12 @@ This is the **public distribution repository**: user documentation, release note
 
 Download runtime ZIPs and their `SHA256SUMS` from [GitHub Releases](https://github.com/cyljacky02/wincd/releases). GitHub's automatically generated **Source code** ZIP/tarball contains this documentation repository, **not** the installable engine.
 
-The current release is **v0.4.1**, a **pre-release**, with these files:
+The current release is **v0.4.2**, a **pre-release**, with these files:
 
-- `wincd-engine-0.4.1.zip`: the engine. Its transaction data format and Backup layout are the same as v0.3.x but differ from v0.2.x: read the [release notes](CHANGELOG.md) before updating. It also contains `engine\ManualKit\`, the builder for BAT kits; see section 5 of INSTALL.
+- `wincd-engine-0.4.2.zip`: the engine. Its transaction data format and Backup layout are the same as v0.3.x but differ from v0.2.x: read the [release notes](CHANGELOG.md) before updating. It also contains `engine\ManualKit\`, the builder for BAT kits; see section 5 of INSTALL.
 - `install.bat` and `install-fast.bat` (optional): double-click either one, next to the engine ZIP and `SHA256SUMS`, to install or update the engine. See section 2 of INSTALL.
-- `wincd-samples-0.4.1.zip` (optional): a demo you can deploy (v1, then v2) and roll back on a test machine without Tomcat, IIS, or F5, a BAT kit for that demo, the fully commented Deployment Profile reference, and a copy of [INSTALL](INSTALL.md). See section 4 of INSTALL.
-- `WinCD-Packager-0.4.1.zip` and `WinCD-Packager-0.4.1.zip.sha256` (optional, for platform maintainers): turns one Release into a single handoff ZIP for a deployer. Its SHA-256 is in the `.sha256` file, because the packager itself contains `SHA256SUMS`. See section 5 of INSTALL.
+- `wincd-samples-0.4.2.zip` (optional): a demo you can deploy (v1, then v2) and roll back on a test machine without Tomcat, IIS, or F5, a BAT kit for that demo, the fully commented Deployment Profile reference, and a copy of [INSTALL](INSTALL.md). See section 4 of INSTALL.
+- `WinCD-Packager-0.4.2.zip` and `WinCD-Packager-0.4.2.zip.sha256` (optional, for platform maintainers): turns one Release into a single handoff ZIP for a deployer. Its SHA-256 is in the `.sha256` file, because the packager itself contains `SHA256SUMS`. See section 5 of INSTALL.
 
 A pre-release is intended for evaluation, not a claim of production readiness; see the [release notes](CHANGELOG.md) for its validation scope and limitations.
 
