@@ -53,6 +53,10 @@ New in this release:
 
 This is not a production-readiness declaration.
 
+### License
+
+Apache License 2.0. Bundled YamlDotNet remains under its MIT license.
+
 ## v0.4.0 — pre-release
 
 This release adds two ways to operate WinCD without typing commands: `install.bat` to install or update the engine, and a BAT kit that gives deployers double-click Status, Deploy, Go-Live, Rollback and Recovery Run for one deployment environment. Deployment behavior and data formats are unchanged from v0.3.2.
