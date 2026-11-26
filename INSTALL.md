@@ -5,7 +5,7 @@
 以下指令都在 Windows PowerShell 5.1（`powershell.exe`）執行。先把 `$version` 設成要安裝的版本：
 
 ```powershell
-$version = '0.4.0'
+$version = '0.4.1'
 ```
 
 ## 1. 下載與核對
@@ -17,8 +17,9 @@ $version = '0.4.0'
 - `install.bat`：雙擊安裝或更新的安裝程式，見第 2 節
 - 選用：`install-fast.bat`：固定安裝或更新 `D:\WinCD` 的快速版，見第 2 節
 - 選用：`wincd-samples-<版本>.zip`：範例包，見第 4 節
+- 選用：`WinCD-Packager-<版本>.zip` 與 `WinCD-Packager-<版本>.zip.sha256`：平台維護者的交接打包工具，見第 5 節
 
-計算每個 zip 與 `install.bat`（或 `install-fast.bat`）的 SHA-256，與 `SHA256SUMS` 中同名檔案的值比對；不一致就停止。
+計算每個 zip 與 `install.bat`（或 `install-fast.bat`）的 SHA-256，與 `SHA256SUMS` 中同名檔案的值比對；不一致就停止。打包工具 ZIP 裡有 `SHA256SUMS`，所以它自己的 SHA-256 在 `WinCD-Packager-<版本>.zip.sha256`，不在 `SHA256SUMS`。
 
 ```powershell
 Get-FileHash ".\wincd-engine-$version.zip" -Algorithm SHA256
@@ -68,7 +69,7 @@ SHA-256 只證明檔案內容相同；與安裝包放在一起下載、沒有簽
 
 ```bat
 install.bat -Root D:\WinCD -Yes
-install.bat -Version 0.4.0 -Root D:\WinCD -Yes
+install.bat -Version 0.4.1 -Root D:\WinCD -Yes
 ```
 
 - `-Root` 是既有安裝時更新它，否則全新安裝到那裡；這台主機已有其他安裝時拒絕，不會另裝一份（有沒有 `-Yes` 都一樣）。
@@ -139,7 +140,7 @@ D:\WinCD\data\
 | `README.md` | 測試機上手導覽：換版 v1 → 換版 v2 → 退版 → 清理，並列出對應的指令列指令。 |
 | `INSTALL.md` | 本文件（v0.1.2 起）。 |
 | `demo/wincd-demo-v1.zip`、`demo/wincd-demo-v2.zip` | 專案 `wincd-demo` 的 release：不需要 Tomcat、IIS 或 F5，只寫入 `C:\WinCD-demo\`。 |
-| `demo/wincd-kit-wincd-demo/` | 為 `wincd-demo` 與裝在 `C:\WinCD` 的引擎預先建好的 BAT 操作包（第 5 節），搭配上面兩個 release 在測試機試用。 |
+| `demo/wincd-kit-wincd-demo-v1/`、`demo/wincd-kit-wincd-demo-v2/` | 為 `wincd-demo` 與裝在 `C:\WinCD` 的引擎預先建好的 BAT 操作包（第 5 節），每個 demo release 一個，`release.zip` 已在裡面，在測試機試用。 |
 | `reference/order-api/` | 逐欄註解的完整部署設定參考，並列出 IIS 站台、程序服務、檢查步驟與 F5 模式的替代寫法。它指向 `D:\Tomcat9`、`C:\nginx` 與 IIS 監測站台，不能在乾淨的測試機上直接換版；撰寫自己的部署設定時從這裡複製。 |
 
 demo **只在測試機使用**：它以管理員身分執行，讓 `C:\WinCD-demo\site` 與每次換版的 release 一致（完整同步會刪除 release 中沒有的檔案，保留清單除外），而且 `wincd-demo` 專案的紀錄會留在 WinCD 的 `data`，WinCD 沒有刪除專案紀錄的指令。
@@ -148,25 +149,28 @@ demo **只在測試機使用**：它以管理員身分執行，讓 `C:\WinCD-dem
 
 不想使用 TUI 或輸入指令的部署人員，可以使用為一個部署環境（一台主機上的一個專案）預先建好的 BAT 操作包：雙擊查看狀態、換版、Go-Live（接 F5 時）、查看最後狀態，以及例外的退版與復原。BAT 只呼叫這台主機已安裝的 `wincd`，不帶 `-Yes`、`-Json` 或 `-Force`：摘要、大寫 `Y`、交易與 exit code 都是 WinCD 自己的。CI/CD 不使用操作包，照常直接呼叫 `wincd`。
 
-建置程式隨引擎安裝在 `engine\ManualKit\`。以已提升權限的 Windows PowerShell 5.1 執行：
+操作包為一個 Release 建置：`release.zip` 在操作包裡，它的 SHA-256 在建置時固定，`2-Deploy.bat` 自己核對、不詢問任何值。**交給部署人員（建議）：打包工具。** 平台維護者解壓 `WinCD-Packager-<版本>.zip`，把 Release 放在 `Pack.bat` 旁邊命名為 `release.zip`，雙擊 `Pack.bat`（不需要系統管理員權限、離線）。它以 WinCD 自己的唯讀 Plan 檢查 Release，寫出一個交接 ZIP：一頁的 `00-先讀我.txt`、`1-Install\`（與發行的檔案逐位元相同的 `install-fast.bat`、引擎安裝包與 `SHA256SUMS`）、把操作包連同 Release 放進 `D:\WinCD-Kits\<專案>` 的 `2-Prepare-Kit.bat`，以及操作包。部署人員解壓後依說明依序雙擊。用法見打包工具 ZIP 裡的 `README.txt`。
+
+**直接建置。** 建置程式隨引擎安裝在 `engine\ManualKit\`（v0.4.1 起固定 SHA-256；v0.4.0 附的是要求貼上 SHA-256 的舊流程）。以已提升權限的管理員在主機上執行：
 
 ```powershell
-& C:\WinCD\engine\ManualKit\New-WinCDManualKit.ps1 -Project order-api -F5Mode None -Reason CHG-2026-11 -OutputPath "$env:TEMP\wincd-kit-order-api"
+& D:\WinCD\engine\ManualKit\New-WinCDManualKit.ps1 -Project order-api -F5Mode None -ReleasePath .\release.zip -OutputPath "$env:TEMP\wincd-kit-order-api"
 ```
 
-- `-Project`：這個部署環境的專案（Release 的 `Project`）。
-- `-F5Mode`：這個部署環境 Release 的 `F5.Mode`：`None`、`IisEndpoint` 或 `LegacyFile`。接 F5 時多一個 `3-Go-Live-Up-F5.bat`；`-IncludeDownF5` 另加只改導流、不停服務的 `Manual-Down-F5.bat`。
+- `-Project`：這個部署環境的專案，必須是 Release 的 `Project`。建置程式以 WinCD 的唯讀 Plan 檢查 Release：不通過，或 `Project`、`F5.Mode` 與參數不同時不建置。
+- `-ReleasePath`：必填，這個操作包要換版的 Release ZIP：複製成操作包裡的 `release.zip`，SHA-256 固定在 `wincd-kit.psd1`。
+- `-F5Mode`：這個部署環境 Release 的 `F5.Mode`（必須相同）：`None`、`IisEndpoint` 或 `LegacyFile`。接 F5 時多一個 `3-Go-Live-Up-F5.bat`；`-IncludeDownF5` 另加只改導流、不停服務的 `Manual-Down-F5.bat`。
 - `-Reason`：選填，每次操作帶給 WinCD 的固定 Reason（例如變更單號）。
-- `-EngineEntry`：預設就是建置程式所在的那份引擎；操作包要給別的根目錄或另一台主機上的引擎使用時，才指定那個引擎的 `wincd.ps1`，例如 `D:\WinCD\engine\wincd.ps1`。
+- `-EngineEntry`：選填，預設是建置程式所在的引擎（上例是 `D:\WinCD\engine\wincd.ps1`）。
 - `-OutputPath`：必填，已存在時拒絕；不能在 `engine` 裡（更新引擎時整個 `engine` 會被換掉）。建在只有你能寫入的位置，例如上面的 `$env:TEMP`。
 
-結果列出每個檔案的 SHA-256，請記在交付紀錄。交付依操作包內 `README.txt` 的「受保護的交付位置」：先建立只有系統管理員能修改的資料夾，再複製操作包、把擁有者設為 Administrators，最後逐檔核對 SHA-256。操作包只從這樣的資料夾執行，否則在要求 UAC 之前就拒絕。之後每次換版，只要以系統管理員把 Release ZIP 以固定檔名 `release.zip` 放進資料夾，並在交付紀錄附上它的 SHA-256；BAT 不必重新產生。
+結果列出每個檔案的 SHA-256。交付依操作包內 `README.txt` 的「受保護的交付位置」：一般由交接 ZIP 的 `2-Prepare-Kit.bat` 完成；手動交付時先建立只有系統管理員能修改的資料夾，再複製整個操作包、把擁有者設為 Administrators，並依建置結果核對每個檔案的 SHA-256。操作包只從這樣的資料夾執行，否則在要求 UAC 之前就拒絕。每個新的 Release 都重新建置並整個取代操作包；BAT 與啟動程式逐位元相同，只有固定的 SHA-256 與 `release.zip` 不同。不要只換 `release.zip`：與固定的 SHA-256 不符時 `2-Deploy.bat` 會拒絕。
 
-更新引擎不影響已交付的操作包：它帶著自己的啟動程式，只呼叫已安裝的 `wincd`。發行說明寫到啟動程式有修正，或部署環境的固定值要變更時，才用新引擎附的建置程式重新建置並重新交付。
+更新引擎不影響已交付的操作包：它帶著自己的啟動程式，只呼叫已安裝的 `wincd`。v0.4.0 建置、要求貼上 SHA-256 的操作包在 v0.4.1 照常使用；要改用固定 SHA-256 的流程，重新建置並整個取代它。
 
-範例包的 `demo/wincd-kit-wincd-demo/` 是為 `wincd-demo` 建好的操作包，可以在測試機試用（見範例包的 `README.md`）。
+範例包的 `demo/wincd-kit-wincd-demo-v1/` 與 `demo/wincd-kit-wincd-demo-v2/` 是為 `wincd-demo` 建好的操作包，可以在測試機試用（見範例包的 `README.md`）。
 
-**限制：** BAT 操作包尚未在真實的 UAC 視窗、檔案總管雙擊與 RDP 主控台完成人工驗收；自動測試以替身模擬 UAC。正式使用前，先在測試機走一次。
+**限制：** BAT 操作包與交接 ZIP 的 `2-Prepare-Kit.bat` 尚未在真實的 UAC 視窗、檔案總管雙擊與 RDP 主控台完成人工驗收；自動測試以替身模擬 UAC。正式使用前，先在測試機走一次。
 
 ## 更新
 
